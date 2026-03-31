@@ -1,23 +1,11 @@
 /*
  * Arduino HID Controller - Leonardo Edition
- * Simple version: letters and numbers only
+ * Letters and numbers only
  * 
  * HARDWARE: Connect USB-to-Serial adapter to Leonardo RX(0)/TX(1) pins
  * - USB-Serial RX  → Leonardo TX (pin 1)
  * - USB-Serial TX  → Leonardo RX (pin 0)
  * - GND           → GND
- * 
- * Command Protocol:
- *   KEY:<text>           - Type text (letters + numbers only)
- *   KEY:ENTER/SPACE/TAB/ESCAPE/BACKSPACE
- *   KEY:UP/DOWN/LEFT/RIGHT
- *   KEY:F1-F4
- *   KEY:SHIFT:<text>    - Type uppercase
- *   KEY:CTRL:<text>     - Type with Ctrl
- *   CLICK:left/right/middle
- *   MOUSE:<dx>,<dy>
- *   PING
- *   HELP
  */
 
 #include <Keyboard.h>
@@ -92,19 +80,23 @@ void processCommand(const char* cmd) {
 void handleKey(const char* arg) {
   // Modifier prefixes
   if (strncmp(arg, "SHIFT:", 6) == 0) {
-    typeString(arg + 6, true);
+    Keyboard.press(KEY_LEFT_SHIFT);
+    typeText(arg + 6);
+    Keyboard.release(KEY_LEFT_SHIFT);
     Serial1.println("OK");
     return;
   }
   if (strncmp(arg, "CTRL:", 5) == 0) {
-    typeStringMod(arg + 5, KEY_LEFT_CTRL);
+    Keyboard.press(KEY_LEFT_CTRL);
+    typeText(arg + 5);
+    Keyboard.release(KEY_LEFT_CTRL);
     Serial1.println("OK");
     return;
   }
   
   // Special keys
   if (strcmp(arg, "ENTER") == 0) { Keyboard.press(KEY_RETURN); Keyboard.release(KEY_RETURN); Serial1.println("OK"); return; }
-  if (strcmp(arg, "SPACE") == 0) { Keyboard.press(0x2C); Keyboard.release(0x2C); Serial1.println("OK"); return; }
+  if (strcmp(arg, "SPACE") == 0) { Keyboard.write(' '); Serial1.println("OK"); return; }
   if (strcmp(arg, "TAB") == 0) { Keyboard.press(KEY_TAB); Keyboard.release(KEY_TAB); Serial1.println("OK"); return; }
   if (strcmp(arg, "ESCAPE") == 0 || strcmp(arg, "ESC") == 0) { Keyboard.press(KEY_ESC); Keyboard.release(KEY_ESC); Serial1.println("OK"); return; }
   if (strcmp(arg, "BACKSPACE") == 0 || strcmp(arg, "BS") == 0) { Keyboard.press(KEY_BACKSPACE); Keyboard.release(KEY_BACKSPACE); Serial1.println("OK"); return; }
@@ -123,49 +115,16 @@ void handleKey(const char* arg) {
   if (strcmp(arg, "F3") == 0) { Keyboard.press(KEY_F3); Keyboard.release(KEY_F3); Serial1.println("OK"); return; }
   if (strcmp(arg, "F4") == 0) { Keyboard.press(KEY_F4); Keyboard.release(KEY_F4); Serial1.println("OK"); return; }
   
-  // Regular text: letters and numbers only
-  typeString(arg, false);
+  // Regular text using Keyboard.write() - handles ASCII correctly
+  typeText(arg);
   Serial1.println("OK");
 }
 
-void typeString(const char* str, bool upper) {
+// Use Keyboard.write() for reliable ASCII mapping
+void typeText(const char* str) {
   while (*str) {
-    char c = *str;
-    uint8_t k = 0;
-    
-    if (c >= 'a' && c <= 'z') k = 0x04 + (c - 'a');
-    else if (c >= 'A' && c <= 'Z') k = 0x04 + (c - 'A');
-    else if (c >= '0' && c <= '9') k = (c == '0') ? 0x27 : 0x1E + (c - '1');
-    else if (c == ' ') k = 0x2C;
-    
-    if (k) {
-      if (upper) Keyboard.press(KEY_LEFT_SHIFT);
-      Keyboard.press(k);
-      delay(1);
-      Keyboard.releaseAll();
-    }
+    Keyboard.write(*str);
     str++;
     delay(10);
   }
-}
-
-void typeStringMod(const char* str, uint8_t mod) {
-  Keyboard.press(mod);
-  while (*str) {
-    char c = *str;
-    uint8_t k = 0;
-    
-    if (c >= 'a' && c <= 'z') k = 0x04 + (c - 'a');
-    else if (c >= 'A' && c <= 'Z') k = 0x04 + (c - 'A');
-    else if (c >= '0' && c <= '9') k = (c == '0') ? 0x27 : 0x1E + (c - '1');
-    
-    if (k) {
-      Keyboard.press(k);
-      delay(1);
-      Keyboard.releaseAll();
-    }
-    str++;
-    delay(10);
-  }
-  Keyboard.release(mod);
 }
