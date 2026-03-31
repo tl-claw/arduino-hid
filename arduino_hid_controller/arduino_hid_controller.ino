@@ -93,6 +93,19 @@ void handleKey(const char* arg) {
     Serial1.println("OK");
     return;
   }
+  if (strncmp(arg, "WIN:", 4) == 0) {
+    Keyboard.press(KEY_LEFT_GUI);
+    typeText(arg + 4);
+    Keyboard.release(KEY_LEFT_GUI);
+    Serial1.println("OK");
+    return;
+  }
+  if (strcmp(arg, "WIN") == 0) {
+    Keyboard.press(KEY_LEFT_GUI);
+    Keyboard.release(KEY_LEFT_GUI);
+    Serial1.println("OK");
+    return;
+  }
   
   // Special keys
   if (strcmp(arg, "ENTER") == 0) { Keyboard.press(KEY_RETURN); Keyboard.release(KEY_RETURN); Serial1.println("OK"); return; }

@@ -122,7 +122,7 @@
 
                 <!-- Special Keys Row 1 -->
                 <WrapPanel Grid.Row="0" Margin="0,0,0,5">
-                    <Button Content="WIN" Command="{Binding SendKeyCommand}" CommandParameter="GUI" Style="{StaticResource KeyButton}"/>
+                    <Button Content="WIN" Command="{Binding SendKeyCommand}" CommandParameter="WIN" Style="{StaticResource KeyButton}"/>
                     <Button Content="R" Command="{Binding SendKeyCommand}" CommandParameter="R" Style="{StaticResource KeyButton}"/>
                     <Button Content="TAB" Command="{Binding SendKeyCommand}" CommandParameter="TAB" Style="{StaticResource KeyButton}"/>
                     <Button Content="ESC" Command="{Binding SendKeyCommand}" CommandParameter="ESCAPE" Style="{StaticResource KeyButton}"/>
@@ -149,6 +149,14 @@
                     <Button Content="F2" Command="{Binding SendKeyCommand}" CommandParameter="F2" Style="{StaticResource KeyButton}"/>
                     <Button Content="F3" Command="{Binding SendKeyCommand}" CommandParameter="F3" Style="{StaticResource KeyButton}"/>
                     <Button Content="F4" Command="{Binding SendKeyCommand}" CommandParameter="F4" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F5" Command="{Binding SendKeyCommand}" CommandParameter="F5" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F6" Command="{Binding SendKeyCommand}" CommandParameter="F6" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F7" Command="{Binding SendKeyCommand}" CommandParameter="F7" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F8" Command="{Binding SendKeyCommand}" CommandParameter="F8" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F9" Command="{Binding SendKeyCommand}" CommandParameter="F9" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F10" Command="{Binding SendKeyCommand}" CommandParameter="F10" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F11" Command="{Binding SendKeyCommand}" CommandParameter="F11" Style="{StaticResource KeyButton}"/>
+                    <Button Content="F12" Command="{Binding SendKeyCommand}" CommandParameter="F12" Style="{StaticResource KeyButton}"/>
                     <Button Content="CAPS" Command="{Binding SendKeyCommand}" CommandParameter="CAPSLOCK" Style="{StaticResource KeyButton}"/>
                     <Button Content="DEL" Command="{Binding SendKeyCommand}" CommandParameter="DELETE" Style="{StaticResource KeyButton}"/>
                 </WrapPanel>
@@ -192,17 +200,33 @@
 
             <!-- Mouse Control -->
             <GroupBox Grid.Column="1" Header="Mouse">
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="LEFT" Command="{Binding ClickCommand}" CommandParameter="left" 
-                            Style="{StaticResource KeyButton}"/>
-                    <Button Content="RIGHT" Command="{Binding ClickCommand}" CommandParameter="right" 
-                            Style="{StaticResource KeyButton}"/>
-                    <Button Content="MID" Command="{Binding ClickCommand}" CommandParameter="middle" 
-                            Style="{StaticResource KeyButton}"/>
-                    <Button Content="↑" Command="{Binding ScrollCommand}" CommandParameter="up" 
-                            Style="{StaticResource KeyButton}" ToolTip="Scroll up"/>
-                    <Button Content="↓" Command="{Binding ScrollCommand}" CommandParameter="down" 
-                            Style="{StaticResource KeyButton}" ToolTip="Scroll down"/>
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <TextBlock Text="X:" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBox Text="{Binding MouseX, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="#2a2a2a" Foreground="White" 
+                                 BorderBrush="#444" BorderThickness="1"
+                                 Width="60" VerticalContentAlignment="Center" Padding="5,0"/>
+                        <TextBlock Text="Y:" Foreground="White" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                        <TextBox Text="{Binding MouseY, UpdateSourceTrigger=PropertyChanged}" 
+                                 Background="#2a2a2a" Foreground="White" 
+                                 BorderBrush="#444" BorderThickness="1"
+                                 Width="60" VerticalContentAlignment="Center" Padding="5,0"/>
+                        <Button Content="MOVE" Command="{Binding MouseMoveRelativeCommand}"
+                                Style="{StaticResource ActionButton}" Margin="10,0,0,0"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="LEFT" Command="{Binding ClickCommand}" CommandParameter="left" 
+                                Style="{StaticResource KeyButton}"/>
+                        <Button Content="RIGHT" Command="{Binding ClickCommand}" CommandParameter="right" 
+                                Style="{StaticResource KeyButton}"/>
+                        <Button Content="MID" Command="{Binding ClickCommand}" CommandParameter="middle" 
+                                Style="{StaticResource KeyButton}"/>
+                        <Button Content="↑" Command="{Binding ScrollCommand}" CommandParameter="up" 
+                                Style="{StaticResource KeyButton}" ToolTip="Scroll up"/>
+                        <Button Content="↓" Command="{Binding ScrollCommand}" CommandParameter="down" 
+                                Style="{StaticResource KeyButton}" ToolTip="Scroll down"/>
+                    </StackPanel>
                 </StackPanel>
             </GroupBox>
         </Grid>
