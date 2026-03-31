@@ -58,6 +58,82 @@ bool ctrlHeld = false;
 bool altHeld = false;
 bool metaHeld = false;  // Command key on Mac
 
+// Keycode table for explicit US keyboard layout
+// Each entry: { ascii_char, keycode, needs_shift }
+// For uppercase letters, needs_shift=true (will press SHIFT + keycode)
+// For digits 0-9, needs_shift=false for the digit itself, true for shifted symbol
+// For symbols, needs_shift=true for shifted symbols
+struct KeyEntry {
+  char c;
+  uint8_t keycode;
+  bool needsShift;
+};
+
+const KeyEntry KEY_TABLE[] = {
+  // Lowercase letters (no shift)
+  {'a', 0x04, false}, {'b', 0x05, false}, {'c', 0x06, false}, {'d', 0x07, false},
+  {'e', 0x08, false}, {'f', 0x09, false}, {'g', 0x0A, false}, {'h', 0x0B, false},
+  {'i', 0x0C, false}, {'j', 0x0D, false}, {'k', 0x0E, false}, {'l', 0x0F, false},
+  {'m', 0x10, false}, {'n', 0x11, false}, {'o', 0x12, false}, {'p', 0x13, false},
+  {'q', 0x14, false}, {'r', 0x15, false}, {'s', 0x16, false}, {'t', 0x17, false},
+  {'u', 0x18, false}, {'v', 0x19, false}, {'w', 0x1D, false}, {'x', 0x1B, false},
+  {'y', 0x1C, false}, {'z', 0x1A, false},
+  // Numbers (keycodes 0x1E-0x27, shift=false gives 1-9,0; shift=true gives !@#$%^&*() )
+  {'1', 0x1E, false}, {'2', 0x1F, false}, {'3', 0x20, false}, {'4', 0x21, false},
+  {'5', 0x22, false}, {'6', 0x23, false}, {'7', 0x24, false}, {'8', 0x25, false},
+  {'9', 0x26, false}, {'0', 0x27, false},
+  // Space and backspace
+  {' ', 0x2C, false},  // Space
+  // Common symbols (US keyboard layout, shifted)
+  {'!', 0x1E, true},   // 1
+  {'@', 0x1F, true},   // 2
+  {'#', 0x20, true},   // 3
+  {'$', 0x21, true},   // 4
+  {'%', 0x22, true},   // 5
+  {'^', 0x23, true},   // 6
+  {'&', 0x24, true},   // 7
+  {'*', 0x25, true},   // 8
+  {'(', 0x26, true},   // 9
+  {')', 0x27, true},   // 0
+  {'-', 0x2D, false},  // - (minus)
+  {'_', 0x2D, true},   // _
+  {'=', 0x2E, false},  // =
+  {'+', 0x2E, true},   // +
+  {'[', 0x2F, false},  // [
+  {'{', 0x2F, true},   // {
+  {']', 0x30, false},  // ]
+  {'}', 0x30, true},   // }
+  {'\\', 0x31, false}, // backslash
+  {'|', 0x31, true},   // |
+  {';', 0x33, false},  // ;
+  {':', 0x33, true},   // :
+  {'\'', 0x34, false}, // '
+  {'"', 0x34, true},   // "
+  {'`', 0x35, false},  // `
+  {'~', 0x35, true},   // ~
+  {',', 0x36, false},  // ,
+  {'<', 0x36, true},   // <
+  {'.', 0x37, false},  // .
+  {'>', 0x37, true},   // >
+  {'/', 0x38, false},  // /
+  {'?', 0x38, true},   // ?
+  // Tab
+  {'\t', 0x2B, false}, // Tab
+};
+
+#define KEY_TABLE_SIZE (sizeof(KEY_TABLE) / sizeof(KEY_TABLE[0]))
+
+// Find keycode for a character
+// Returns -1 if not found
+int findKeycode(char c) {
+  for (int i = 0; i < KEY_TABLE_SIZE; i++) {
+    if (KEY_TABLE[i].c == c) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 void setup() {
   // Use Hardware Serial (UART) - pins 0 (RX) and 1 (TX)
   Serial1.begin(115200);
@@ -177,30 +253,22 @@ void printHelp() {
 void handleKeyCommand(const char* arg) {
   // Check for modifier prefixes
   if (strncmp(arg, "SHIFT:", 6) == 0) {
-    Keyboard.press(KEY_LEFT_SHIFT);
-    typeString(arg + 6);
-    Keyboard.release(KEY_LEFT_SHIFT);
+    typeString(arg + 6, true);  // force shift
     Serial1.println("OK:KEY:SHIFT");
     return;
   }
   if (strncmp(arg, "CTRL:", 5) == 0) {
-    Keyboard.press(KEY_LEFT_CTRL);
-    typeString(arg + 5);
-    Keyboard.release(KEY_LEFT_CTRL);
+    typeStringWithModifier(arg + 5, KEY_LEFT_CTRL);
     Serial1.println("OK:KEY:CTRL");
     return;
   }
   if (strncmp(arg, "ALT:", 4) == 0) {
-    Keyboard.press(KEY_LEFT_ALT);
-    typeString(arg + 4);
-    Keyboard.release(KEY_LEFT_ALT);
+    typeStringWithModifier(arg + 4, KEY_LEFT_ALT);
     Serial1.println("OK:KEY:ALT");
     return;
   }
   if (strncmp(arg, "META:", 5) == 0) {
-    Keyboard.press(KEY_LEFT_GUI);  // Command key on Mac
-    typeString(arg + 5);
-    Keyboard.release(KEY_LEFT_GUI);
+    typeStringWithModifier(arg + 5, KEY_LEFT_GUI);
     Serial1.println("OK:KEY:META");
     return;
   }
@@ -212,7 +280,8 @@ void handleKeyCommand(const char* arg) {
     Serial1.println("OK:KEY:ENTER");
   }
   else if (strcmp(arg, "SPACE") == 0) {
-    Keyboard.write(' ');
+    Keyboard.press(KEY_SPACE);
+    Keyboard.release(KEY_SPACE);
     Serial1.println("OK:KEY:SPACE");
   }
   else if (strcmp(arg, "TAB") == 0) {
@@ -301,21 +370,100 @@ void handleKeyCommand(const char* arg) {
     Serial1.println("OK:KEY:F4");
   }
   else {
-    // Regular text - type as-is
-    typeString(arg);
+    // Regular text - type with explicit keycodes
+    typeString(arg, false);
     Serial1.print("OK:KEY:");
     Serial1.println(arg);
   }
 }
 
-void typeString(const char* str) {
-  // The Keyboard library handles ASCII->keycode mapping
-  // and Shift/Caps automatically. Just write each character.
+// Type a string using explicit keycodes
+// If forceShift is true, press shift for all characters (for KEY:SHIFT: prefix)
+void typeString(const char* str, bool forceShift) {
   while (*str) {
-    Keyboard.write(*str);
+    char c = *str;
+    
+    // Handle uppercase letters - always need shift
+    if (c >= 'A' && c <= 'Z') {
+      Keyboard.press(KEY_LEFT_SHIFT);
+      Keyboard.press(0x04 + (c - 'A'));  // a=0x04, b=0x05, etc.
+      delay(1);
+      Keyboard.releaseAll();
+    }
+    // Handle lowercase letters - no shift needed
+    else if (c >= 'a' && c <= 'z') {
+      Keyboard.press(0x04 + (c - 'a'));
+      delay(1);
+      Keyboard.releaseAll();
+    }
+    // Handle digits
+    else if (c >= '0' && c <= '9') {
+      Keyboard.press(0x1E + (c - '0'));
+      delay(1);
+      Keyboard.releaseAll();
+    }
+    // Handle space
+    else if (c == ' ') {
+      Keyboard.press(KEY_SPACE);
+      delay(1);
+      Keyboard.releaseAll();
+    }
+    // Handle everything else via lookup table
+    else {
+      int idx = findKeycode(c);
+      if (idx >= 0) {
+        if (KEY_TABLE[idx].needsShift || forceShift) {
+          Keyboard.press(KEY_LEFT_SHIFT);
+        }
+        Keyboard.press(KEY_TABLE[idx].keycode);
+        delay(1);
+        Keyboard.releaseAll();
+      }
+    }
+    
     str++;
     delay(10);  // Small delay between characters
   }
+}
+
+// Type a string with a modifier key held
+void typeStringWithModifier(const char* str, uint8_t modifierKey) {
+  Keyboard.press(modifierKey);
+  while (*str) {
+    char c = *str;
+    
+    // Map character to keycode
+    uint8_t keycode = 0;
+    
+    if (c >= 'a' && c <= 'z') {
+      keycode = 0x04 + (c - 'a');
+    } else if (c >= 'A' && c <= 'Z') {
+      keycode = 0x04 + (c - 'A');
+      Keyboard.press(KEY_LEFT_SHIFT);  // Hold shift for uppercase
+    } else if (c >= '0' && c <= '9') {
+      keycode = 0x1E + (c - '0');
+    } else if (c == ' ') {
+      keycode = KEY_SPACE;
+    } else {
+      int idx = findKeycode(c);
+      if (idx >= 0) {
+        keycode = KEY_TABLE[idx].keycode;
+        if (KEY_TABLE[idx].needsShift) {
+          Keyboard.press(KEY_LEFT_SHIFT);
+        }
+      }
+    }
+    
+    if (keycode) {
+      Keyboard.press(keycode);
+      delay(1);
+      Keyboard.releaseAll();
+    }
+    
+    str++;
+    delay(10);
+  }
+  Keyboard.release(modifierKey);
 }
 
 void handleKeycodeCommand(const char* arg) {
