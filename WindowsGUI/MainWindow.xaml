@@ -161,8 +161,14 @@
                     <Button Content="DEL" Command="{Binding SendKeyCommand}" CommandParameter="DELETE" Style="{StaticResource KeyButton}"/>
                 </WrapPanel>
 
+                <!-- Symbols -->
+                <WrapPanel Grid.Row="3" Margin="0,0,0,5">
+                    <Button Content="-" Command="{Binding SendKeyCommand}" CommandParameter="-" Style="{StaticResource KeyButton}"/>
+                    <Button Content="+" Command="{Binding SendKeyCommand}" CommandParameter="+" Style="{StaticResource KeyButton}"/>
+                </WrapPanel>
+
                 <!-- Modifiers -->
-                <StackPanel Grid.Row="3" Orientation="Horizontal">
+                <StackPanel Grid.Row="4" Orientation="Horizontal">
                     <CheckBox Content="Shift" IsChecked="{Binding ShiftModifier}" Foreground="White" Margin="0,0,15,0"/>
                     <CheckBox Content="Ctrl" IsChecked="{Binding CtrlModifier}" Foreground="White" Margin="0,0,15,0"/>
                     <CheckBox Content="Alt" IsChecked="{Binding AltModifier}" Foreground="White" Margin="0,0,15,0"/>
