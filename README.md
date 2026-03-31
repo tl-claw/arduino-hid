@@ -171,5 +171,91 @@ arduino-hid/
 ├── arduino_hid_controller/
 │   └── arduino_hid_controller.ino   # Arduino sketch (flash this)
 ├── arduino-hid.py                    # Mac-side controller CLI
+├── WindowsGUI/                        # Windows WPF GUI
+│   ├── ArduinoHID.csproj
+│   ├── MainWindow.xaml(.cs)
+│   ├── ViewModels/MainViewModel.cs
+│   ├── Services/SerialService.cs
+│   └── Converters/BoolConverters.cs
 └── README.md
 ```
+
+---
+
+## Windows GUI (WPF)
+
+A Windows-only graphical interface for controlling the Arduino HID device.
+
+### Requirements
+- Windows 10/11
+- .NET 8.0 Runtime
+- Arduino Leonardo (or compatible) connected to target PC
+
+### Build from Source
+
+```powershell
+cd arduino-hid/WindowsGUI
+dotnet restore
+dotnet add package CommunityToolkit.Mvvm
+dotnet add package System.IO.Ports
+dotnet build
+```
+
+### Run
+```powershell
+dotnet run
+# or
+.\bin\Debug\net8.0-windows\ArduinoHID.exe
+```
+
+### Publish (Self-contained)
+
+```powershell
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true
+```
+
+### Features
+- Serial port connection management (auto-detect COM ports)
+- Keyboard shortcut buttons (Win, R, Tab, Esc, Enter, arrows, F1-F4, etc.)
+- Modifier keys (Shift, Ctrl, Alt, Meta)
+- Text input with modifier support
+- Mouse click buttons (left, right, middle)
+- Scroll wheel control
+- Custom command input
+- Real-time command/response log
+
+### UI Layout
+```
+┌─────────────────────────────────────────────────────────┐
+│  Arduino HID Controller                    [COM3 ▼] [↻] [Connect] │
+├─────────────────────────────────────────────────────────┤
+│  Keyboard                              Mouse            │
+│  [WIN][R][TAB][ESC][ENTER][SPACE][BS]  [LEFT][RIGHT][MID] │
+│  [↑][↓][←][→][HOME][END][PGUP][PGDN]   [↑SCROLL][↓SCROLL] │
+│  [F1][F2][F3][F4][CAPS][DEL]                            │
+│  ☐ Shift ☐ Ctrl ☐ Alt ☐ Meta  [RELEASE ALL]            │
+├─────────────────────────────────────────────────────────┤
+│  Text Input                    │  Quick Commands        │
+│  [________________] [Send]     │  Custom: [_______]    │
+├─────────────────────────────────────────────────────────┤
+│  Command Log                                           │
+│  > PING                                                │
+│  ← PONG                                                │
+│  > KEY:Hello                                          │
+│  ← OK:KEY:Hello                                       │
+├─────────────────────────────────────────────────────────┤
+│  Port: COM3 | Baud: 115200                            │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Integration with OCR/Vision Automation
+
+The GUI sends commands over serial to the Arduino. To integrate with screen capture and OCR:
+
+1. Arduino plugs into **target PC** (as HID keyboard/mouse)
+2. Serial cable connects **target PC** to **host PC** running this GUI
+3. USB capture card sends target PC screen to host
+4. Host runs OCR → finds UI elements → calculates coordinates
+5. Host sends commands via this GUI to control target PC
+
+See the BIOS/Windows automation workflow in the Discord discussion about VT3 stress testing.
