@@ -125,19 +125,19 @@ void handleKey(const char* arg) {
   if (strcmp(arg, "CAPSLOCK") == 0) { Keyboard.press(KEY_CAPS_LOCK); Keyboard.release(KEY_CAPS_LOCK); Serial1.println("OK"); return; }
   
   // F1-F4
-  if (strcmp(arg, "F1") == 0) { Keyboard.press(KEY_F1); Keyboard.release(KEY_F1); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F2") == 0) { Keyboard.press(KEY_F2); Keyboard.release(KEY_F2); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F3") == 0) { Keyboard.press(KEY_F3); Keyboard.release(KEY_F3); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F4") == 0) { Keyboard.press(KEY_F4); Keyboard.release(KEY_F4); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F1") == 0) { Keyboard.press(KEY_F1); delay(10); Keyboard.release(KEY_F1); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F2") == 0) { Keyboard.press(KEY_F2); delay(10); Keyboard.release(KEY_F2); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F3") == 0) { Keyboard.press(KEY_F3); delay(10); Keyboard.release(KEY_F3); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F4") == 0) { Keyboard.press(KEY_F4); delay(10); Keyboard.release(KEY_F4); Serial1.println("OK"); return; }
   // F5-F12
-  if (strcmp(arg, "F5") == 0) { Keyboard.press(KEY_F5); Keyboard.release(KEY_F5); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F6") == 0) { Keyboard.press(KEY_F6); Keyboard.release(KEY_F6); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F7") == 0) { Keyboard.press(KEY_F7); Keyboard.release(KEY_F7); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F8") == 0) { Keyboard.press(KEY_F8); Keyboard.release(KEY_F8); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F9") == 0) { Keyboard.press(KEY_F9); Keyboard.release(KEY_F9); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F10") == 0) { Keyboard.press(KEY_F10); Keyboard.release(KEY_F10); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F11") == 0) { Keyboard.press(KEY_F11); Keyboard.release(KEY_F11); Serial1.println("OK"); return; }
-  if (strcmp(arg, "F12") == 0) { Keyboard.press(KEY_F12); Keyboard.release(KEY_F12); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F5") == 0) { Keyboard.press(KEY_F5); delay(10); Keyboard.release(KEY_F5); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F6") == 0) { Keyboard.press(KEY_F6); delay(10); Keyboard.release(KEY_F6); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F7") == 0) { Keyboard.press(KEY_F7); delay(10); Keyboard.release(KEY_F7); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F8") == 0) { Keyboard.press(KEY_F8); delay(10); Keyboard.release(KEY_F8); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F9") == 0) { Keyboard.press(KEY_F9); delay(10); Keyboard.release(KEY_F9); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F10") == 0) { Keyboard.press(KEY_F10); delay(10); Keyboard.release(KEY_F10); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F11") == 0) { Keyboard.press(KEY_F11); delay(10); Keyboard.release(KEY_F11); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F12") == 0) { Keyboard.press(KEY_F12); delay(10); Keyboard.release(KEY_F12); Serial1.println("OK"); return; }
   
   // Regular text
   typeText(arg);
