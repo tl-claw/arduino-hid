@@ -43,6 +43,9 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private int _mouseY;
 
+    [ObservableProperty]
+    private bool _noTimeout;
+
     public ObservableCollection<string> AvailablePorts { get; } = new();
 
     public MainViewModel()
@@ -201,7 +204,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         AppendLog($"> {cmd}");
-        var response = await _serial.SendCommandAsync(cmd, _cts.Token);
+        var timeout = NoTimeout ? 0 : 0.5;
+        var response = await _serial.SendCommandAsync(cmd, _cts.Token, timeout);
         if (!string.IsNullOrEmpty(response))
         {
             AppendLog($"← {response}");

@@ -250,6 +250,8 @@
                 <TextBlock Text="Port: " Foreground="#888"/>
                 <TextBlock Text="{Binding SelectedPort}" Foreground="#aaa"/>
                 <TextBlock Text=" | Baud: 115200" Foreground="#888" Margin="10,0,0,0"/>
+                <CheckBox Content="No Timeout" IsChecked="{Binding NoTimeout}" 
+                         Foreground="#aaa" Margin="15,0,0,0" VerticalAlignment="Center"/>
             </StackPanel>
         </Grid>
     </Grid>

@@ -76,7 +76,7 @@ public class SerialService : IDisposable
         }
     }
 
-    public async Task<string> SendCommandAsync(string cmd, CancellationToken ct = default)
+    public async Task<string> SendCommandAsync(string cmd, CancellationToken ct = default, double timeoutSeconds = 0.5)
     {
         if (_port == null || !_port.IsOpen)
             return "ERR:Not connected";
@@ -84,7 +84,7 @@ public class SerialService : IDisposable
         try
         {
             _port.WriteLine(cmd);
-            return await ReadLineAsync(ct);
+            return await ReadLineAsync(ct, timeoutSeconds);
         }
         catch (Exception ex)
         {
@@ -108,13 +108,17 @@ public class SerialService : IDisposable
         }
     }
 
-    private async Task<string> ReadLineAsync(CancellationToken ct)
+    private async Task<string> ReadLineAsync(CancellationToken ct, double timeoutSeconds = 0.5)
     {
         var buffer = new List<char>();
         var start = DateTime.Now;
 
-        while ((DateTime.Now - start).TotalSeconds < 3)
+        while (true)
         {
+            // Check timeout (only if timeoutSeconds > 0)
+            if (timeoutSeconds > 0 && (DateTime.Now - start).TotalSeconds >= timeoutSeconds)
+                break;
+
             ct.ThrowIfCancellationRequested();
 
             lock (_lock)

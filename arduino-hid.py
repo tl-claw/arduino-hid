@@ -69,19 +69,20 @@ def connect(port=None, baud=DEFAULT_BAUD, timeout=3.0):
         print(f"Error connecting to {port}: {e}", file=sys.stderr)
         sys.exit(1)
 
-def send_command(ser, cmd, wait_response=True, timeout=5.0):
+def send_command(ser, cmd, wait_response=True, timeout=0.5):
     """Send a command and optionally wait for response."""
     ser.write(f"{cmd}\n".encode('utf-8'))
     ser.flush()
     
     if wait_response:
         start = time.time()
-        while time.time() - start < timeout:
+        while True:
+            if timeout > 0 and (time.time() - start) >= timeout:
+                return ""  # Timeout
             if ser.in_waiting > 0:
                 response = ser.readline().decode('utf-8', errors='ignore').strip()
                 return response
             time.sleep(0.01)
-        return ""  # Timeout
     return None
 
 def send_batch(ser, commands):
@@ -184,7 +185,8 @@ def main():
     parser.add_argument('command', nargs='?', help='Command to send (e.g., KEY:Hello)')
     parser.add_argument('--port', '-p', help=f'Serial port (auto-detect if omitted)')
     parser.add_argument('--baud', '-b', type=int, default=DEFAULT_BAUD, help=f'Baud rate (default: {DEFAULT_BAUD})')
-    parser.add_argument('--no-wait', '-n', action='store_true', help="Don't wait for response")
+    parser.add_argument('--no-wait', '-n', action='store_true', help="Don't wait for response (fire and forget)")
+    parser.add_argument('--no-timeout', action='store_true', help="Wait indefinitely for response")
     parser.add_argument('--list', '-l', action='store_true', help='List available serial devices')
     parser.add_argument('--interactive', '-i', action='store_true', help='Interactive mode')
     parser.add_argument('--batch', action='store_true', help='Batch mode (one arg per command)')
@@ -223,7 +225,8 @@ def main():
         sys.exit(1)
     
     ser = connect(args.port, args.baud)
-    resp = send_command(ser, args.command, wait_response=not args.no_wait)
+    timeout = 0 if args.no_timeout else 0.5
+    resp = send_command(ser, args.command, wait_response=not args.no_wait, timeout=timeout)
     if resp:
         print(resp)
     ser.close()
