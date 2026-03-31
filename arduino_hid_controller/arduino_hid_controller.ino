@@ -1,6 +1,11 @@
 /*
  * Arduino HID Controller - Leonardo Edition
- * Receives commands over Serial (USB CDC) and executes HID actions
+ * Receives commands over Hardware Serial (UART RX/TX) and executes HID actions
+ * 
+ * HARDWARE: Connect USB-to-Serial adapter to Leonardo RX(0)/TX(1) pins
+ * - USB-Serial RX  → Leonardo TX (pin 1)
+ * - USB-Serial TX  → Leonardo RX (pin 0)
+ * - GND           → GND
  * 
  * Command Protocol:
  *   KEY:<text>           - Type text (letters, numbers, symbols)
@@ -20,8 +25,8 @@
  *   KEY:META:<text>      - Type with Cmd held (Mac)
  *   MODIFIER:<modifiers> - Set modifier keys (SHIFT|CTRL|ALT|META)
  *   RELEASEALL           - Release all pressed keys
- *   MOUSE:<dx>,<dy>      - Move mouse relative
- *   MOUSE:ABS:<x>,<y>    - Move mouse absolute (0-32767 range)
+ *   MOUSE:<dx>,<dy>     - Move mouse relative
+ *   MOUSE:ABS:<x>,<y>   - Move mouse absolute (0-32767 range)
  *   CLICK:left           - Left click
  *   CLICK:right          - Right click
  *   CLICK:middle         - Middle click
@@ -29,7 +34,7 @@
  *   PRESS:right          - Press and hold right button
  *   RELEASE:left         - Release left button
  *   RELEASE:right        - Release right button
- *   SCROLL:<dx>,<dy>     - Scroll wheel
+ *   SCROLL:<dx>,<dy>    - Scroll wheel
  *   SCREEN:WIDTH         - Report screen dimensions
  *   PING                 - Respond with PONG
  *   HELP                 - List available commands
@@ -54,23 +59,24 @@ bool altHeld = false;
 bool metaHeld = false;  // Command key on Mac
 
 void setup() {
-  Serial.begin(115200);
+  // Use Hardware Serial (UART) - pins 0 (RX) and 1 (TX)
+  Serial1.begin(115200);
   Keyboard.begin();
   Mouse.begin();
   
-  // Wait for serial connection (Leonardo specific)
-  while (!Serial) {
-    ; // Wait for serial port to connect
+  // Wait for serial connection
+  while (!Serial1) {
+    ; // Wait for serial1 port to connect
   }
   
   // Indicate ready
-  Serial.println("Arduino HID Controller Ready");
-  Serial.println("Type HELP for commands, PING to test");
+  Serial1.println("Arduino HID Controller Ready");
+  Serial1.println("Type HELP for commands, PING to test");
 }
 
 void loop() {
-  while (Serial.available() > 0) {
-    char c = Serial.read();
+  while (Serial1.available() > 0) {
+    char c = Serial1.read();
     
     if (c == '\n' || c == '\r') {
       if (bufPos > 0) {
@@ -92,7 +98,7 @@ void processCommand(const char* cmd) {
   
   // Parse command type
   if (strncmp(cmd, "PING", 4) == 0) {
-    Serial.println("PONG");
+    Serial1.println("PONG");
   }
   else if (strncmp(cmd, "HELP", 4) == 0) {
     printHelp();
@@ -111,7 +117,7 @@ void processCommand(const char* cmd) {
     Mouse.release(MOUSE_LEFT);
     Mouse.release(MOUSE_RIGHT);
     Mouse.release(MOUSE_MIDDLE);
-    Serial.println("OK:RELEASEALL");
+    Serial1.println("OK:RELEASEALL");
   }
   else if (strncmp(cmd, "MOUSE:", 6) == 0) {
     handleMouseCommand(cmd + 6);
@@ -129,14 +135,14 @@ void processCommand(const char* cmd) {
     handleScrollCommand(cmd + 7);
   }
   else if (strncmp(cmd, "SCREEN:WIDTH", 12) == 0) {
-    Serial.print("SCREEN:");
-    Serial.print(SCREEN_W);
-    Serial.print(":");
-    Serial.println(SCREEN_H);
+    Serial1.print("SCREEN:");
+    Serial1.print(SCREEN_W);
+    Serial1.print(":");
+    Serial1.println(SCREEN_H);
   }
   else {
-    Serial.print("ERR:Unknown command: ");
-    Serial.println(cmd);
+    Serial1.print("ERR:Unknown command: ");
+    Serial1.println(cmd);
   }
   
   // Ensure all keys are released after each command
@@ -144,28 +150,28 @@ void processCommand(const char* cmd) {
 }
 
 void printHelp() {
-  Serial.println("=== Arduino HID Controller Commands ===");
-  Serial.println("KEY:<text>           - Type text");
-  Serial.println("KEY:ENTER/SPACE/TAB  - Special keys");
-  Serial.println("KEY:UP/DOWN/LEFT/RIGHT- Arrow keys");
-  Serial.println("KEY:BACKSPACE        - Backspace");
-  Serial.println("KEY:ESCAPE           - Escape");
-  Serial.println("KEY:SHIFT:<text>     - Type with Shift");
-  Serial.println("KEY:CTRL:<text>      - Type with Ctrl");
-  Serial.println("KEY:ALT:<text>       - Type with Alt");
-  Serial.println("KEY:META:<text>      - Type with Cmd");
-  Serial.println("KEYCODE:<n>          - Press keycode n");
-  Serial.println("MODIFIER:SHIFT|CTRL|ALT|META - Set/Clear modifiers");
-  Serial.println("RELEASEALL          - Release all keys/buttons");
-  Serial.println("MOUSE:<dx>,<dy>      - Relative mouse move");
-  Serial.println("MOUSE:ABS:<x>,<y>    - Absolute mouse (0-32767)");
-  Serial.println("CLICK:left/right/middle - Single click");
-  Serial.println("PRESS:left/right     - Hold mouse button");
-  Serial.println("RELEASE:left/right   - Release mouse button");
-  Serial.println("SCROLL:<dx>,<dy>     - Scroll wheel");
-  Serial.println("SCREEN:WIDTH         - Get screen size");
-  Serial.println("PING                 - Connection test");
-  Serial.println("HELP                 - This help text");
+  Serial1.println("=== Arduino HID Controller Commands ===");
+  Serial1.println("KEY:<text>           - Type text");
+  Serial1.println("KEY:ENTER/SPACE/TAB  - Special keys");
+  Serial1.println("KEY:UP/DOWN/LEFT/RIGHT- Arrow keys");
+  Serial1.println("KEY:BACKSPACE        - Backspace");
+  Serial1.println("KEY:ESCAPE           - Escape");
+  Serial1.println("KEY:SHIFT:<text>     - Type with Shift");
+  Serial1.println("KEY:CTRL:<text>      - Type with Ctrl");
+  Serial1.println("KEY:ALT:<text>       - Type with Alt");
+  Serial1.println("KEY:META:<text>      - Type with Cmd");
+  Serial1.println("KEYCODE:<n>          - Press keycode n");
+  Serial1.println("MODIFIER:SHIFT|CTRL|ALT|META - Set/Clear modifiers");
+  Serial1.println("RELEASEALL          - Release all keys/buttons");
+  Serial1.println("MOUSE:<dx>,<dy>      - Relative mouse move");
+  Serial1.println("MOUSE:ABS:<x>,<y>   - Absolute mouse (0-32767)");
+  Serial1.println("CLICK:left/right/middle - Single click");
+  Serial1.println("PRESS:left/right    - Hold mouse button");
+  Serial1.println("RELEASE:left/right  - Release mouse button");
+  Serial1.println("SCROLL:<dx>,<dy>     - Scroll wheel");
+  Serial1.println("SCREEN:WIDTH         - Get screen size");
+  Serial1.println("PING                 - Connection test");
+  Serial1.println("HELP                 - This help text");
 }
 
 void handleKeyCommand(const char* arg) {
@@ -174,28 +180,28 @@ void handleKeyCommand(const char* arg) {
     Keyboard.press(KEY_LEFT_SHIFT);
     typeString(arg + 6);
     Keyboard.release(KEY_LEFT_SHIFT);
-    Serial.println("OK:KEY:SHIFT");
+    Serial1.println("OK:KEY:SHIFT");
     return;
   }
   if (strncmp(arg, "CTRL:", 5) == 0) {
     Keyboard.press(KEY_LEFT_CTRL);
     typeString(arg + 5);
     Keyboard.release(KEY_LEFT_CTRL);
-    Serial.println("OK:KEY:CTRL");
+    Serial1.println("OK:KEY:CTRL");
     return;
   }
   if (strncmp(arg, "ALT:", 4) == 0) {
     Keyboard.press(KEY_LEFT_ALT);
     typeString(arg + 4);
     Keyboard.release(KEY_LEFT_ALT);
-    Serial.println("OK:KEY:ALT");
+    Serial1.println("OK:KEY:ALT");
     return;
   }
   if (strncmp(arg, "META:", 5) == 0) {
     Keyboard.press(KEY_LEFT_GUI);  // Command key on Mac
     typeString(arg + 5);
     Keyboard.release(KEY_LEFT_GUI);
-    Serial.println("OK:KEY:META");
+    Serial1.println("OK:KEY:META");
     return;
   }
   
@@ -203,107 +209,107 @@ void handleKeyCommand(const char* arg) {
   if (strcmp(arg, "ENTER") == 0) {
     Keyboard.press(KEY_RETURN);
     Keyboard.release(KEY_RETURN);
-    Serial.println("OK:KEY:ENTER");
+    Serial1.println("OK:KEY:ENTER");
   }
   else if (strcmp(arg, "SPACE") == 0) {
     Keyboard.write(' ');
-    Serial.println("OK:KEY:SPACE");
+    Serial1.println("OK:KEY:SPACE");
   }
   else if (strcmp(arg, "TAB") == 0) {
     Keyboard.press(KEY_TAB);
     Keyboard.release(KEY_TAB);
-    Serial.println("OK:KEY:TAB");
+    Serial1.println("OK:KEY:TAB");
   }
   else if (strcmp(arg, "BACKSPACE") == 0) {
     Keyboard.press(KEY_BACKSPACE);
     Keyboard.release(KEY_BACKSPACE);
-    Serial.println("OK:KEY:BACKSPACE");
+    Serial1.println("OK:KEY:BACKSPACE");
   }
   else if (strcmp(arg, "DELETE") == 0) {
     Keyboard.press(KEY_DELETE);
     Keyboard.release(KEY_DELETE);
-    Serial.println("OK:KEY:DELETE");
+    Serial1.println("OK:KEY:DELETE");
   }
   else if (strcmp(arg, "ESCAPE") == 0) {
     Keyboard.press(KEY_ESC);
     Keyboard.release(KEY_ESC);
-    Serial.println("OK:KEY:ESCAPE");
+    Serial1.println("OK:KEY:ESCAPE");
   }
   else if (strcmp(arg, "UP") == 0) {
     Keyboard.press(KEY_UP_ARROW);
     Keyboard.release(KEY_UP_ARROW);
-    Serial.println("OK:KEY:UP");
+    Serial1.println("OK:KEY:UP");
   }
   else if (strcmp(arg, "DOWN") == 0) {
     Keyboard.press(KEY_DOWN_ARROW);
     Keyboard.release(KEY_DOWN_ARROW);
-    Serial.println("OK:KEY:DOWN");
+    Serial1.println("OK:KEY:DOWN");
   }
   else if (strcmp(arg, "LEFT") == 0) {
     Keyboard.press(KEY_LEFT_ARROW);
     Keyboard.release(KEY_LEFT_ARROW);
-    Serial.println("OK:KEY:LEFT");
+    Serial1.println("OK:KEY:LEFT");
   }
   else if (strcmp(arg, "RIGHT") == 0) {
     Keyboard.press(KEY_RIGHT_ARROW);
     Keyboard.release(KEY_RIGHT_ARROW);
-    Serial.println("OK:KEY:RIGHT");
+    Serial1.println("OK:KEY:RIGHT");
   }
   else if (strcmp(arg, "HOME") == 0) {
     Keyboard.press(KEY_HOME);
     Keyboard.release(KEY_HOME);
-    Serial.println("OK:KEY:HOME");
+    Serial1.println("OK:KEY:HOME");
   }
   else if (strcmp(arg, "END") == 0) {
     Keyboard.press(KEY_END);
     Keyboard.release(KEY_END);
-    Serial.println("OK:KEY:END");
+    Serial1.println("OK:KEY:END");
   }
   else if (strcmp(arg, "PAGEUP") == 0) {
     Keyboard.press(KEY_PAGE_UP);
     Keyboard.release(KEY_PAGE_UP);
-    Serial.println("OK:KEY:PAGEUP");
+    Serial1.println("OK:KEY:PAGEUP");
   }
   else if (strcmp(arg, "PAGEDOWN") == 0) {
     Keyboard.press(KEY_PAGE_DOWN);
     Keyboard.release(KEY_PAGE_DOWN);
-    Serial.println("OK:KEY:PAGEDOWN");
+    Serial1.println("OK:KEY:PAGEDOWN");
   }
   else if (strcmp(arg, "CAPS_LOCK") == 0 || strcmp(arg, "CAPSLOCK") == 0) {
     Keyboard.press(KEY_CAPS_LOCK);
     Keyboard.release(KEY_CAPS_LOCK);
-    Serial.println("OK:KEY:CAPSLOCK");
+    Serial1.println("OK:KEY:CAPSLOCK");
   }
   else if (strcmp(arg, "F1") == 0) {
     Keyboard.press(KEY_F1);
     Keyboard.release(KEY_F1);
-    Serial.println("OK:KEY:F1");
+    Serial1.println("OK:KEY:F1");
   }
   else if (strcmp(arg, "F2") == 0) {
     Keyboard.press(KEY_F2);
     Keyboard.release(KEY_F2);
-    Serial.println("OK:KEY:F2");
+    Serial1.println("OK:KEY:F2");
   }
   else if (strcmp(arg, "F3") == 0) {
     Keyboard.press(KEY_F3);
     Keyboard.release(KEY_F3);
-    Serial.println("OK:KEY:F3");
+    Serial1.println("OK:KEY:F3");
   }
   else if (strcmp(arg, "F4") == 0) {
     Keyboard.press(KEY_F4);
     Keyboard.release(KEY_F4);
-    Serial.println("OK:KEY:F4");
+    Serial1.println("OK:KEY:F4");
   }
   else {
     // Regular text - type as-is
     typeString(arg);
-    Serial.print("OK:KEY:");
-    Serial.println(arg);
+    Serial1.print("OK:KEY:");
+    Serial1.println(arg);
   }
 }
 
 void typeString(const char* str) {
-  // The new Keyboard library uses write() which handles ASCII->keycode mapping
+  // The Keyboard library handles ASCII->keycode mapping
   // and Shift/Caps automatically. Just write each character.
   while (*str) {
     Keyboard.write(*str);
@@ -317,11 +323,11 @@ void handleKeycodeCommand(const char* arg) {
   if (code > 0 && code <= 255) {
     Keyboard.press(code);
     Keyboard.release(code);
-    Serial.print("OK:KEYCODE:");
-    Serial.println(code);
+    Serial1.print("OK:KEYCODE:");
+    Serial1.println(code);
   } else {
-    Serial.print("ERR:Invalid keycode: ");
-    Serial.println(arg);
+    Serial1.print("ERR:Invalid keycode: ");
+    Serial1.println(arg);
   }
 }
 
@@ -363,7 +369,7 @@ void handleModifierCommand(const char* arg) {
     token = strtok(NULL, "|,");
   }
   
-  Serial.println("OK:MODIFIER");
+  Serial1.println("OK:MODIFIER");
 }
 
 void handleMouseCommand(const char* arg) {
@@ -372,24 +378,24 @@ void handleMouseCommand(const char* arg) {
     int x, y;
     if (sscanf(arg + 4, "%d,%d", &x, &y) == 2) {
       Mouse.move(x, y, 0);
-      Serial.print("OK:MOUSE:ABS:");
-      Serial.print(x);
-      Serial.print(",");
-      Serial.println(y);
+      Serial1.print("OK:MOUSE:ABS:");
+      Serial1.print(x);
+      Serial1.print(",");
+      Serial1.println(y);
     } else {
-      Serial.println("ERR:Invalid MOUSE:ABS format (use MOUSE:ABS:x,y)");
+      Serial1.println("ERR:Invalid MOUSE:ABS format (use MOUSE:ABS:x,y)");
     }
   } else {
     // Relative movement
     int dx, dy;
     if (sscanf(arg, "%d,%d", &dx, &dy) == 2) {
       Mouse.move(dx, dy, 0);
-      Serial.print("OK:MOUSE:");
-      Serial.print(dx);
-      Serial.print(",");
-      Serial.println(dy);
+      Serial1.print("OK:MOUSE:");
+      Serial1.print(dx);
+      Serial1.print(",");
+      Serial1.println(dy);
     } else {
-      Serial.println("ERR:Invalid MOUSE format (use MOUSE:dx,dy or MOUSE:ABS:x,y)");
+      Serial1.println("ERR:Invalid MOUSE format (use MOUSE:dx,dy or MOUSE:ABS:x,y)");
     }
   }
 }
@@ -403,19 +409,19 @@ void handleClickCommand(const char* arg) {
   
   if (strcmp(upper, "LEFT") == 0) {
     Mouse.click(MOUSE_LEFT);
-    Serial.println("OK:CLICK:LEFT");
+    Serial1.println("OK:CLICK:LEFT");
   }
   else if (strcmp(upper, "RIGHT") == 0) {
     Mouse.click(MOUSE_RIGHT);
-    Serial.println("OK:CLICK:RIGHT");
+    Serial1.println("OK:CLICK:RIGHT");
   }
   else if (strcmp(upper, "MIDDLE") == 0) {
     Mouse.click(MOUSE_MIDDLE);
-    Serial.println("OK:CLICK:MIDDLE");
+    Serial1.println("OK:CLICK:MIDDLE");
   }
   else {
-    Serial.print("ERR:Unknown click button: ");
-    Serial.println(arg);
+    Serial1.print("ERR:Unknown click button: ");
+    Serial1.println(arg);
   }
 }
 
@@ -426,19 +432,19 @@ void handlePressCommand(const char* arg) {
   
   if (strcmp(upper, "LEFT") == 0) {
     Mouse.press(MOUSE_LEFT);
-    Serial.println("OK:PRESS:LEFT");
+    Serial1.println("OK:PRESS:LEFT");
   }
   else if (strcmp(upper, "RIGHT") == 0) {
     Mouse.press(MOUSE_RIGHT);
-    Serial.println("OK:PRESS:RIGHT");
+    Serial1.println("OK:PRESS:RIGHT");
   }
   else if (strcmp(upper, "MIDDLE") == 0) {
     Mouse.press(MOUSE_MIDDLE);
-    Serial.println("OK:PRESS:MIDDLE");
+    Serial1.println("OK:PRESS:MIDDLE");
   }
   else {
-    Serial.print("ERR:Unknown press button: ");
-    Serial.println(arg);
+    Serial1.print("ERR:Unknown press button: ");
+    Serial1.println(arg);
   }
 }
 
@@ -449,19 +455,19 @@ void handleReleaseCommand(const char* arg) {
   
   if (strcmp(upper, "LEFT") == 0) {
     Mouse.release(MOUSE_LEFT);
-    Serial.println("OK:RELEASE:LEFT");
+    Serial1.println("OK:RELEASE:LEFT");
   }
   else if (strcmp(upper, "RIGHT") == 0) {
     Mouse.release(MOUSE_RIGHT);
-    Serial.println("OK:RELEASE:RIGHT");
+    Serial1.println("OK:RELEASE:RIGHT");
   }
   else if (strcmp(upper, "MIDDLE") == 0) {
     Mouse.release(MOUSE_MIDDLE);
-    Serial.println("OK:RELEASE:MIDDLE");
+    Serial1.println("OK:RELEASE:MIDDLE");
   }
   else {
-    Serial.print("ERR:Unknown release button: ");
-    Serial.println(arg);
+    Serial1.print("ERR:Unknown release button: ");
+    Serial1.println(arg);
   }
 }
 
@@ -469,11 +475,11 @@ void handleScrollCommand(const char* arg) {
   int dx, dy;
   if (sscanf(arg, "%d,%d", &dx, &dy) == 2) {
     Mouse.move(0, 0, dy);  // Vertical scroll (positive = down, negative = up)
-    Serial.print("OK:SCROLL:");
-    Serial.print(dx);
-    Serial.print(",");
-    Serial.println(dy);
+    Serial1.print("OK:SCROLL:");
+    Serial1.print(dx);
+    Serial1.print(",");
+    Serial1.println(dy);
   } else {
-    Serial.println("ERR:Invalid SCROLL format (use SCROLL:dx,dy)");
+    Serial1.println("ERR:Invalid SCROLL format (use SCROLL:dx,dy)");
   }
 }
