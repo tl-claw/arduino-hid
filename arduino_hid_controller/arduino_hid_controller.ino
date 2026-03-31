@@ -1,6 +1,6 @@
 /*
  * Arduino HID Controller - Leonardo Edition
- * Letters and numbers only
+ * Letters, numbers, and common symbols
  * 
  * HARDWARE: Connect USB-to-Serial adapter to Leonardo RX(0)/TX(1) pins
  * - USB-Serial RX  → Leonardo TX (pin 1)
@@ -110,12 +110,23 @@ void handleKey(const char* arg) {
   if (strcmp(arg, "PAGEUP") == 0) { Keyboard.press(KEY_PAGE_UP); Keyboard.release(KEY_PAGE_UP); Serial1.println("OK"); return; }
   if (strcmp(arg, "PAGEDOWN") == 0) { Keyboard.press(KEY_PAGE_DOWN); Keyboard.release(KEY_PAGE_DOWN); Serial1.println("OK"); return; }
   if (strcmp(arg, "CAPSLOCK") == 0) { Keyboard.press(KEY_CAPS_LOCK); Keyboard.release(KEY_CAPS_LOCK); Serial1.println("OK"); return; }
+  
+  // F1-F4
   if (strcmp(arg, "F1") == 0) { Keyboard.press(KEY_F1); Keyboard.release(KEY_F1); Serial1.println("OK"); return; }
   if (strcmp(arg, "F2") == 0) { Keyboard.press(KEY_F2); Keyboard.release(KEY_F2); Serial1.println("OK"); return; }
   if (strcmp(arg, "F3") == 0) { Keyboard.press(KEY_F3); Keyboard.release(KEY_F3); Serial1.println("OK"); return; }
   if (strcmp(arg, "F4") == 0) { Keyboard.press(KEY_F4); Keyboard.release(KEY_F4); Serial1.println("OK"); return; }
+  // F5-F12
+  if (strcmp(arg, "F5") == 0) { Keyboard.press(KEY_F5); Keyboard.release(KEY_F5); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F6") == 0) { Keyboard.press(KEY_F6); Keyboard.release(KEY_F6); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F7") == 0) { Keyboard.press(KEY_F7); Keyboard.release(KEY_F7); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F8") == 0) { Keyboard.press(KEY_F8); Keyboard.release(KEY_F8); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F9") == 0) { Keyboard.press(KEY_F9); Keyboard.release(KEY_F9); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F10") == 0) { Keyboard.press(KEY_F10); Keyboard.release(KEY_F10); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F11") == 0) { Keyboard.press(KEY_F11); Keyboard.release(KEY_F11); Serial1.println("OK"); return; }
+  if (strcmp(arg, "F12") == 0) { Keyboard.press(KEY_F12); Keyboard.release(KEY_F12); Serial1.println("OK"); return; }
   
-  // Regular text using Keyboard.write() - handles ASCII correctly
+  // Regular text
   typeText(arg);
   Serial1.println("OK");
 }
