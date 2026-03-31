@@ -92,6 +92,19 @@ public class SerialService : IDisposable
         }
     }
 
+    // Fire-and-forget send without waiting for response
+    public void SendCommandNoWait(string cmd)
+    {
+        if (_port == null || !_port.IsOpen)
+            return;
+
+        try
+        {
+            _port.WriteLine(cmd);
+        }
+        catch { }
+    }
+
     public string SendCommand(string cmd)
     {
         if (_port == null || !_port.IsOpen)
@@ -115,7 +128,7 @@ public class SerialService : IDisposable
 
         while (true)
         {
-            // Check timeout (only if timeoutSeconds > 0)
+            // Check timeout (use timeoutSeconds <= 0 to mean "infinite")
             if (timeoutSeconds > 0 && (DateTime.Now - start).TotalSeconds >= timeoutSeconds)
                 break;
 

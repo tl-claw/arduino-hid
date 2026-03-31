@@ -204,11 +204,20 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
 
         AppendLog($"> {cmd}");
-        var timeout = NoTimeout ? 0 : 0.5;
-        var response = await _serial.SendCommandAsync(cmd, _cts.Token, timeout);
-        if (!string.IsNullOrEmpty(response))
+
+        if (NoTimeout)
         {
-            AppendLog($"← {response}");
+            // Fire-and-forget: send without waiting
+            _serial.SendCommandNoWait(cmd);
+            AppendLog("  → (sent, no response wait)");
+        }
+        else
+        {
+            var response = await _serial.SendCommandAsync(cmd, _cts.Token, 0.5);
+            if (!string.IsNullOrEmpty(response))
+            {
+                AppendLog($"← {response}");
+            }
         }
     }
 
