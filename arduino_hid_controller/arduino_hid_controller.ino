@@ -280,8 +280,8 @@ void handleKeyCommand(const char* arg) {
     Serial1.println("OK:KEY:ENTER");
   }
   else if (strcmp(arg, "SPACE") == 0) {
-    Keyboard.press(KEY_SPACE);
-    Keyboard.release(KEY_SPACE);
+    Keyboard.press(0x2C);
+    Keyboard.release(0x2C);
     Serial1.println("OK:KEY:SPACE");
   }
   else if (strcmp(arg, "TAB") == 0) {
@@ -404,7 +404,7 @@ void typeString(const char* str, bool forceShift) {
     }
     // Handle space
     else if (c == ' ') {
-      Keyboard.press(KEY_SPACE);
+      Keyboard.press(0x2C);
       delay(1);
       Keyboard.releaseAll();
     }
@@ -443,7 +443,7 @@ void typeStringWithModifier(const char* str, uint8_t modifierKey) {
     } else if (c >= '0' && c <= '9') {
       keycode = 0x1E + (c - '0');
     } else if (c == ' ') {
-      keycode = KEY_SPACE;
+      keycode = 0x2C;
     } else {
       int idx = findKeycode(c);
       if (idx >= 0) {
